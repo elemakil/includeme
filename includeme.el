@@ -83,6 +83,13 @@ file to the list for your mode (in this case, c++-mode). Then run
   :group 'includeme
   :type 'alist)
 
+(defcustom includeme-do-namespace t
+  "Controls whether `includeme' should insert `using' as well
+
+If non-nil `using' statements will be inserted."
+  :type 'boolean
+  :group 'includeme)
+
 (defconst includeme-match-using
   "^using[ \t]+\\(namespace[ \t]+\\)?[_a-z0-9]+::[_:a-z0-9]+[ \t]*;[ \t]*$"
   "A regular expression for matching using statements.")
@@ -117,11 +124,12 @@ would have also inserted a `using std::cout` statement."
                                 reports)
                   did-work t
                   headers (cdr headers)))
-          (if (and (not (equal name canonical-name))
-                   (eq major-mode 'c++-mode))
-              (setq reports (cons (includeme--insert-using canonical-name)
-                                  reports)
-                    did-work t))
+	  (if includeme-do-namespace
+	      (if (and (not (equal name canonical-name))
+		       (eq major-mode 'c++-mode))
+		  (setq reports (cons (includeme--insert-using canonical-name)
+				      reports)
+			did-work t)))
           (let ((report (includeme--join (reverse reports) "', '")))
             (if (and report (not (equal report "")))
                 (message (format "Inserted: '%s'" report))
